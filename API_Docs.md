@@ -125,6 +125,37 @@ Authenticates a user and **sets the auth cookie**. The cookie is `httpOnly` and 
 | `400` | `{ "message": "Validation failed", "errors": { ... } }` |
 | `401` | `{ "message": "Invalid credentials" }` |
 
+### `GET /v1/api/users/me`
+
+Returns the authenticated user's public profile. The primary use case is checking auth status on page load — if the cookie is valid you get the user back, if not you get a `401`.
+
+**Authentication:** Required (cookie)
+
+**Request:** No body, no query params.
+
+---
+
+**Responses**
+
+| Status | When | Body |
+|--------|------|------|
+| `200` | Cookie is valid and user exists | User object (see below) |
+| `401` | Cookie is missing or the JWT is invalid/expired | `{ "message": "Unauthorized" }` |
+| `404` | JWT was valid but the account no longer exists | `{ "message": "User not found" }` |
+
+**200 body**
+
+```/dev/null/response.json#L1-5
+{
+  "userId":   "a1b2c3d4-...",
+  "username": "alice",
+  "email":    "alice@example.com"
+}
+```
+
+> `password` is never included in the response.
+
+
 ---
 
 ## Contests

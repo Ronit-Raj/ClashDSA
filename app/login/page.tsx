@@ -3,19 +3,18 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiFetch } from "@/app/lib/api";
-
-interface FieldErrors {
-  email?: string[];
-  password?: string[];
-}
+import { useAuth } from "@/app/hooks/useAuth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string[];
+    password?: string[];
+  }>({});
   const [topError, setTopError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -24,39 +23,30 @@ export default function LoginPage() {
     setTopError(null);
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     clearErrors();
 
     startTransition(async () => {
-      try {
-        const res = await apiFetch("/v1/api/users/sign-in", {
-          method: "POST",
-          body: JSON.stringify({ email, password }),
-        });
+      const result = await login(email, password);
 
-        if (res.ok) {
-          router.replace("/");
-          return;
-        }
-
-        const data = await res.json().catch(() => ({}));
-
-        if (res.status === 400) {
-          if (data.errors) setFieldErrors(data.errors as FieldErrors);
-          if (data.message) setTopError(data.message as string);
-          return;
-        }
-
-        if (res.status === 401) {
-          setTopError("Invalid email or password.");
-          return;
-        }
-
-        setTopError("Something went wrong. Please try again.");
-      } catch {
-        setTopError("Something went wrong. Please try again.");
+      if (result.ok) {
+        router.replace("/");
+        return;
       }
+
+      if (result.status === 400) {
+        if (result.errors) setFieldErrors(result.errors);
+        if (result.message) setTopError(result.message);
+        return;
+      }
+
+      if (result.status === 401) {
+        setTopError("Invalid email or password.");
+        return;
+      }
+
+      setTopError(result.message ?? "Something went wrong. Please try again.");
     });
   }
 
@@ -99,7 +89,11 @@ export default function LoginPage() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex flex-col gap-5"
+          >
             {/* Email field */}
             <div className="flex flex-col gap-1.5">
               <label
@@ -128,9 +122,7 @@ export default function LoginPage() {
                 "
               />
               {fieldErrors.email && fieldErrors.email.length > 0 && (
-                <p className="text-red-400 text-sm">
-                  {fieldErrors.email[0]}
-                </p>
+                <p className="text-red-400 text-sm">{fieldErrors.email[0]}</p>
               )}
             </div>
 
