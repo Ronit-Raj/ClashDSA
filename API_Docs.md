@@ -181,7 +181,7 @@ Returns all contests marked as public. **No authentication required.**
   contestId: string          // UUID
   title: string
   contestDuration: number    // minutes
-  startTime: number          // Unix timestamp (ms) — convert with new Date(startTime)
+  startTime: string // representing a JS date object converted from unix ms by drizzle ORM 
   problems: number[]         // array of problem IDs
   creatorId: string          // UUID of the creator
   random: boolean
