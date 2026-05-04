@@ -8,6 +8,7 @@ interface ContestCardProps {
   noOfProblems: number;
   creator?: string;
   status: "live" | "upcoming" | "past";
+  startTime?: string;
 }
 
 function formatDuration(minutes: number) {
@@ -18,12 +19,25 @@ function formatDuration(minutes: number) {
   return `${h}h ${m}m`;
 }
 
+function formatStartTime(startTime: string) {
+  const date = new Date(startTime);
+  if (Number.isNaN(date.getTime())) return "Start time unavailable";
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
 export default function ContestCard({
   title,
   duration,
   noOfProblems,
   creator,
   status,
+  startTime,
 }: ContestCardProps) {
   return (
     <div
@@ -62,6 +76,12 @@ export default function ContestCard({
       <h2 className="text-zinc-100 font-bold text-xl leading-snug group-hover:text-white transition-colors line-clamp-2">
         {title}
       </h2>
+
+      {status === "upcoming" && startTime && (
+        <p className="text-zinc-400 text-sm tabular-nums">
+          Starts {formatStartTime(startTime)}
+        </p>
+      )}
 
       {/* ── Meta row ── */}
       <div className="mt-auto flex items-center gap-2 text-zinc-500 text-sm">

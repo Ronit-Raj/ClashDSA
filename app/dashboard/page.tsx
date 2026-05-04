@@ -213,6 +213,7 @@ export default function Dashboard() {
                   duration={c.contestDuration}
                   noOfProblems={c.problems.length}
                   status="upcoming"
+                  startTime={c.startTime}
                 />
               ))}
             </div>
