@@ -5,6 +5,7 @@ import { useAuth } from "@/app/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import ContestCard from "./ContestCard";
 import CreateContestModal from "./CreateContestModal";
+import EnterContestModal from "./EnterContestModal";
 import { apiFetch } from "@/app/lib/api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -16,6 +17,7 @@ interface Contest {
   startTime: string; // Unix seconds, returned as a string by the API
   problems: number[];
   creatorId: string;
+  creatorUsername: string;
   random: boolean;
   public: boolean;
 }
@@ -23,7 +25,7 @@ interface Contest {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getStatus(
-  startTime: string ,
+  startTime: string,
   duration: number,
 ): "live" | "upcoming" | "past" {
   const now = Date.now();
@@ -65,6 +67,7 @@ export default function Dashboard() {
   const [contests, setContests] = useState<Contest[]>([]);
   const [contestsLoading, setContestsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [contestToEnter, setContestToEnter] = useState<Contest | null>(null);
 
   // Auth guard — redirect unauthenticated users after session check settles
   useEffect(() => {
@@ -179,6 +182,8 @@ export default function Dashboard() {
                   duration={c.contestDuration}
                   noOfProblems={c.problems.length}
                   status="live"
+                  creator={c.creatorUsername}
+                  onClick={() => setContestToEnter(c)}
                 />
               ))}
             </div>
@@ -214,6 +219,7 @@ export default function Dashboard() {
                   noOfProblems={c.problems.length}
                   status="upcoming"
                   startTime={c.startTime}
+                  creator={c.creatorUsername}
                 />
               ))}
             </div>
@@ -249,6 +255,8 @@ export default function Dashboard() {
                   duration={c.contestDuration}
                   noOfProblems={c.problems.length}
                   status="past"
+                  creator={c.creatorUsername}
+                  onClick={() => setContestToEnter(c)}
                 />
               ))}
             </div>
@@ -265,6 +273,14 @@ export default function Dashboard() {
             setContestsLoading(true);
             fetchContests();
           }}
+        />
+      )}
+
+      {/* ── Enter Contest Modal ── */}
+      {contestToEnter && (
+        <EnterContestModal
+          onClose={() => setContestToEnter(null)}
+          contestToEnter={contestToEnter}
         />
       )}
     </main>

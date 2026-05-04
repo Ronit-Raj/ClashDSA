@@ -9,6 +9,7 @@ interface ContestCardProps {
   creator?: string;
   status: "live" | "upcoming" | "past";
   startTime?: string;
+  onClick?: () => void;
 }
 
 function formatDuration(minutes: number) {
@@ -38,14 +39,26 @@ export default function ContestCard({
   creator,
   status,
   startTime,
+  onClick,
 }: ContestCardProps) {
   return (
     <div
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (!onClick) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       className="
         group flex flex-col gap-4
         bg-zinc-900 border border-zinc-800 rounded-xl p-5
         hover:border-green-900 hover:bg-green-900/10
-        transition-all duration-200 cursor-pointer
+        transition-all duration-200
+        cursor-pointer
       "
     >
       {/* ── Top row: status badge + duration ── */}
