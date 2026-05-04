@@ -190,6 +190,36 @@ Returns all contests marked as public. **No authentication required.**
 }
 ```
 
+### Get contest details 
+
+```
+GET /v1/api/contest/:contestId
+```
+
+Returns contest details. **No authentication required.**
+
+**Responses**
+
+| Status | Body |
+|--------|------|
+| `200` |  contest object (see shape below) |
+
+**Contest object shape**
+
+```/dev/null/contest.ts#L1-8
+{
+  contestId: string          // UUID
+  title: string
+  contestDuration: number    // minutes
+  startTime: string // representing a JS date object converted from unix ms by drizzle ORM 
+  problems: number[]         // array of problem IDs
+  creatorId: string          // UUID of the creator
+  creatorUsername: string
+  random: boolean
+  public: boolean
+}
+```
+
 ---
 
 ### Create a Contest
