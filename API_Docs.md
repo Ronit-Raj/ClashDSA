@@ -99,7 +99,7 @@ Creates a new user account. Does **not** sign the user in automatically.
 POST /v1/api/users/sign-in
 ```
 
-Authenticates a user and **sets the auth cookie**. The cookie is `httpOnly` and `Secure`, so it is invisible to JavaScript — the browser sends it automatically.
+Authenticates a user and **sets the auth cookie**. The cookie is `httpOnly` , so it is invisible to JavaScript — the browser sends it automatically.
 
 **Request body**
 
@@ -184,6 +184,7 @@ Returns all contests marked as public. **No authentication required.**
   startTime: string // representing a JS date object converted from unix ms by drizzle ORM 
   problems: number[]         // array of problem IDs
   creatorId: string          // UUID of the creator
+  creatorUsername: string
   random: boolean
   public: boolean
 }
