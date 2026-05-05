@@ -4,7 +4,7 @@ import Editor from "@monaco-editor/react";
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import { Contest } from "@/app/types";
-import { Socket,io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 type Language = {
   label: string;
@@ -74,7 +74,8 @@ export default function ContestPage({
     {},
   );
   const totalTestCases = useRef<number>(0);
-  const [solvedCases, setSolvedCases] = useState(0);
+  const solvedCasesRef = useRef(0);
+  const submissionFinishedRef = useRef(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -102,28 +103,38 @@ export default function ContestPage({
       if (!ignore) setContest(null);
     });
 
-    // socket event listener
     socket.current = io("http://57.158.25.157:3000");
-      socket.current.on("codeResult", (data) => {
-        // debugger
-        if (data.status.id === 3 && solvedCases !== -1) {
-            setSolvedCases((prev) => prev + 1);
-            setSubmitMessage(`${solvedCases} / ${totalTestCases.current} solved`);
-            // console.log(`${solvedCases} / ${totalTestCases.current} solved`);
-            if (solvedCases === totalTestCases.current) {
-              setIsSubmitting(false);
-            }
-        } else if (solvedCases !== -1) {
-            setSubmitMessage(`${data.status.description} on Test case ${solvedCases+1}`);
-            setSolvedCases(-1);
-            setIsSubmitting(false);
-            // console.log(data.status.description);
+    socket.current.on("codeResult", (data) => {
+      if (submissionFinishedRef.current) return;
+
+      if (data.status.id === 3) {
+        const nextSolved = solvedCasesRef.current + 1;
+        solvedCasesRef.current = nextSolved;
+
+        if (nextSolved >= totalTestCases.current) {
+          submissionFinishedRef.current = true;
+          setSubmitMessage(
+            `Accepted: ${nextSolved} / ${totalTestCases.current} solved`,
+          );
+          setIsSubmitting(false);
+          return;
         }
+
+        setSubmitMessage(`${nextSolved} / ${totalTestCases.current} solved`);
+        return;
+      }
+
+      submissionFinishedRef.current = true;
+      setSubmitMessage(
+        `${data.status.description} on test case ${solvedCasesRef.current + 1}`,
+      );
+      setIsSubmitting(false);
     });
 
-      
     return () => {
       ignore = true;
+      socket.current?.disconnect();
+      socket.current = null;
     };
   }, [slug]);
 
@@ -190,6 +201,9 @@ export default function ContestPage({
 
     setIsSubmitting(true);
     setSubmitMessage(null);
+    solvedCasesRef.current = 0;
+    totalTestCases.current = 0;
+    submissionFinishedRef.current = false;
 
     try {
       const res = await apiFetch("/v1/api/contest/submit", {
@@ -207,17 +221,24 @@ export default function ContestPage({
         submissionId?: string;
         totalTestCases?: number;
       };
-      
+
       if (res.status === 202) {
         totalTestCases.current = data.totalTestCases ?? 0;
         socket.current?.emit("joinRoom", data.submissionId);
+        setSubmitMessage(
+          totalTestCases.current > 0
+            ? `Judging: 0 / ${totalTestCases.current} solved`
+            : "Judging...",
+        );
         return;
       }
 
       setSubmitMessage(data.message ?? "Submission failed. Please try again.");
+      setIsSubmitting(false);
     } catch {
       setSubmitMessage("Submission failed. Please try again.");
-    } 
+      setIsSubmitting(false);
+    }
   }
 
   return (
