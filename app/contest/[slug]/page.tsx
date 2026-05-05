@@ -103,7 +103,7 @@ export default function ContestPage({
       if (!ignore) setContest(null);
     });
 
-    socket.current = io("http://57.158.25.157:3000");
+    socket.current = io("https://clashdsa.duckdns.org");
     socket.current.on("codeResult", (data) => {
       if (submissionFinishedRef.current) return;
 

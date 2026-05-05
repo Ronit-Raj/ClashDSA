@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 // Server-side only — never exposed to the browser bundle.
 // Set BACKEND_URL in .env.local to point at your backend server.
-const backendUrl = process.env.BACKEND_URL ?? "http://57.158.25.157:3000";
+const backendUrl = process.env.BACKEND_URL ?? "https://clashdsa.duckdns.org";
 
 const nextConfig: NextConfig = {
   async rewrites() {
