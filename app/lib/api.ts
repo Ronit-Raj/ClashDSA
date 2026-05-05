@@ -3,8 +3,10 @@
 // each request server-side to the real backend. This keeps cookies same-origin,
 // bypassing all cross-origin Secure/SameSite restrictions.
 
-export async function apiFetch(path: string, init?: RequestInit) {
-  return fetch(path, {
+export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const url = path.startsWith("/") ? path : `/${path}`;
+
+  return fetch(url, {
     ...init,
     credentials: "include",
     headers: {

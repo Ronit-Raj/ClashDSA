@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
         source: "/v1/api/:path*",
         destination: `${backendUrl}/v1/api/:path*`,
       },
+      {
+        // Problem statements are static backend HTML files served outside
+        // /v1/api. Proxy them too so the contest page can fetch same-origin.
+        source: "/:problemId/statement.html",
+        destination: `${backendUrl}/:problemId/statement.html`,
+      },
     ];
   },
 };
