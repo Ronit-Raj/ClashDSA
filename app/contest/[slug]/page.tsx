@@ -2,7 +2,7 @@
 
 import Editor from "@monaco-editor/react";
 import { use, useEffect, useMemo, useRef, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { apiFetch, backendPath, backendUrl } from "@/app/lib/api";
 import { Contest } from "@/app/types";
 import { io, Socket } from "socket.io-client";
 
@@ -103,7 +103,7 @@ export default function ContestPage({
       if (!ignore) setContest(null);
     });
 
-    socket.current = io("https://clashdsa.duckdns.org");
+    socket.current = io(backendUrl);
     socket.current.on("codeResult", (data) => {
       if (submissionFinishedRef.current) return;
 
@@ -146,9 +146,13 @@ export default function ContestPage({
 
     async function fetchStatement() {
       setStatementError(null);
-      const res = await fetch(`/${selectedProblemId}/statement.html`, {
-        cache: "no-store",
-      });
+      const res = await fetch(
+        backendPath(`/${selectedProblemId}/statement.html`),
+        {
+          cache: "no-store",
+          credentials: "include",
+        },
+      );
 
       if (!res.ok) throw new Error("Failed to load statement");
 

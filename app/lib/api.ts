@@ -1,12 +1,16 @@
-// All API calls use relative paths (/v1/api/...) so the browser sends them to
-// the same origin as the Next.js app. next.config.ts rewrites then forward
-// each request server-side to the real backend. This keeps cookies same-origin,
-// bypassing all cross-origin Secure/SameSite restrictions.
+export const backendUrl = (
+  process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://clashdsa.duckdns.org"
+).replace(/\/$/, "");
+
+export function backendPath(path: string) {
+  if (/^https?:\/\//.test(path)) return path;
+
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return backendUrl ? `${backendUrl}${normalizedPath}` : normalizedPath;
+}
 
 export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-  const url = path.startsWith("/") ? path : `/${path}`;
-
-  return fetch(url, {
+  return fetch(backendPath(path), {
     ...init,
     credentials: "include",
     headers: {
